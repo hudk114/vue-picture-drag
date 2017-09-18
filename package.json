@@ -1,0 +1,33 @@
+{
+  "name": "vue-picture-drag",
+  "version": "0.0.1",
+  "description": "a pictures or items draggable component for vue",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hudk114/vue-picture-drag.git"
+  },
+  "keywords": [
+    "drag",
+    "vue"
+  ],
+  "author": "hudk",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hudk114/vue-picture-drag/issues"
+  },
+  "homepage": "https://github.com/hudk114/vue-picture-drag#readme",
+  "devDependencies": {
+    "vue-loader": "^13.0.4"
+  },
+  "dependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "css-loader": "^0.28.7",
+    "vue": "^2.4.4",
+    "vue-style-loader": "^3.0.3"
+  }
+}

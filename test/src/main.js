@@ -2,7 +2,7 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
 import App from './App'
-import drag from '../../src/index.js';
+import drag from '@drag/src/index.js';
 
 Vue.config.productionTip = false
 Vue.use(drag);

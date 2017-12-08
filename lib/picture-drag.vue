@@ -145,13 +145,16 @@
             getFocus(mark, index) {
                 this.setAll('focus', false, this.markStatus);
 
-                this.marks.forEach((item, i) => {
-                    if (i === index) {
-                        item.zIndex = this.marks.length;
-                    } else {
-                        item.zIndex--;
-                    }
-                });
+                // if is the largest index, needn't change
+                if (mark.zIndex !== this.marks.length) {
+                    this.marks.forEach((item, i) => {
+                        if (i === index) {
+                            item.zIndex = this.marks.length;
+                        } else {
+                            item.zIndex--;
+                        }
+                    });
+                }
                 Vue.set(this.markStatus[index], 'focus', true);
             },
             loseFocus(mark, index) {

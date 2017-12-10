@@ -2,7 +2,7 @@
     <div id="app">
         <picture-drag :img="img"
             :title="'for my lover'"
-            :status="status"
+            :dimension="dimension"
             :marks="marks">
         </picture-drag>
         <button type="button" name="button" @click="test">25</button>
@@ -25,7 +25,7 @@
                     imgHeight: '1386',
                     imgWidth: '1080',
                 },
-                status: [
+                dimension: [
                     {
                         name: 'boy',
                         key: 0,
@@ -40,27 +40,27 @@
                 marks: [
                     {
                         name: 'hudk',
-                        status: 0,
+                        dimension: 0,
                         id: 0,
                         left: 273,
                         top: 243,
-                        index: 1, // if no index, would use default index in array
+                        zIndex: 1, // if no zIndex, would use default index in array
                     },
                     {
                         name: 'kiki',
-                        status: 1,
+                        dimension: 1,
                         id: 1,
                         left: 659,
                         top: 142,
-                        index: 2,
+                        zIndex: 2,
                     },
                     {
                         name: 'love',
-                        status: 0,
+                        dimension: 0,
                         id: 0,
                         left: 476,
                         top: 214,
-                        index: 3,
+                        zIndex: 3,
                     },
                 ],
             };
@@ -68,7 +68,8 @@
         methods: {
             test() {
                 console.log(this.marks);
-            }        },
+            }
+        },
     }
 </script>
 

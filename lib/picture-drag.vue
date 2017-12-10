@@ -20,10 +20,10 @@
             @dragover="allowDrop($event)">
         </slot>
 
-        <div class="hui-picture-dragger-status_outter"
-            v-if="statusVisible">
-            <span v-for="item in status"
-                class="hui-picture-dragger-status"
+        <div class="hui-picture-dragger-dimension_outter"
+            v-if="dimensionVisible">
+            <span v-for="item in dimension"
+                class="hui-picture-dragger-dimension"
                 :key="item.key"
                 :style="{ backgroundColor: item.color }"
                 @drop="drop($event)"
@@ -32,7 +32,7 @@
             </span>
         </div>
         <slot v-else
-            name="status"
+            name="dimension"
             @drop="drop($event)"
             @dragover="allowDrop($event)">
         </slot>
@@ -49,12 +49,12 @@
             @dragover="allowDrop($event)"
             class="hui-picture-dragger_mark">
             <div class="hui-picture-dragger_mark-content"
-                :style="{ backgroundColor: markStatus[index].focus? '#F14835': getItem('key', mark.status, status).color }">
+                :style="{ backgroundColor: mark.focus? '#F14835': getItem('key', mark.dimension, dimension).color }">
                 {{mark.name}}
             </div>
             <div class="hui-picture-dragger_mark-triangle">
                 <span class="hui-picture-dragger_mark-triangle-content"
-                    :style="{ borderTopColor: markStatus[index].focus? '#F14835': getItem('key', mark.status, status).color }"></span>
+                    :style="{ borderTopColor: mark.focus? '#F14835': getItem('key', mark.dimension, dimension).color }"></span>
             </div>
         </span>
     </div>
@@ -75,15 +75,15 @@
                 required: true,
             },
             // [{ name, key, color }]
-            status: {
+            dimension: {
                 type: Array,
                 required: true,
             },
-            statusVisible: {
+            dimensionVisible: {
                 type: Boolean,
                 default: true,
             },
-            // [{ name, status, id, left, top, index }]
+            // [{ name, dimension, id, left, top, index }]
             marks: {
                 type: Array,
                 default: [],
@@ -91,18 +91,16 @@
         },
         computed: {
             fixedMarks() {
-                // 创建一个列表，用于映射 mark 与 focus, index, offx and offy
-                this.marks.forEach((item, index) => {
-                    Vue.set(this.markStatus, index, {
-                        offX: 0,
-                        offY: 0,
-                        focus: false,
-                    });
-                });
-                this.marks.forEach((item, index) => {
-                    if (!item.zIndex) {
-                        item.zIndex = index + 1;
+                const setValue = function setValue(obj, key, value) {
+                    if ('undefined' === typeof obj[key]) {
+                        Vue.set(obj, key, value);
                     }
+                };
+                this.marks.forEach((item, index) => {
+                    setValue(item, 'offX', 0);
+                    setValue(item, 'offY', 0);
+                    setValue(item, 'focus', false);
+                    setValue(item, 'zIndex', index + 1);
                 });
                 return this.marks;
             },
@@ -110,6 +108,7 @@
         data() {
             return {
                 markStatus: [],
+                preventFlag: false,
             };
         },
         mounted() {
@@ -118,18 +117,20 @@
         methods: {
             dragStart(e, mark, index) {
                 // the position of the click event and pic has offset, need to set
-                this.markStatus[index].offX = mark.left - e.offsetX;
-                this.markStatus[index].offY = mark.top - e.offsetY;
                 this.getFocus(mark, index);
+                mark.offX = mark.left - e.offsetX;
+                mark.offY = mark.top - e.offsetY;
                 this.$emit('dragStart');
             },
             dragEnd(e, mark, index) {
-                mark.left = e.offsetX + this.markStatus[index].offX;
-                mark.top = e.offsetY + this.markStatus[index].offY;
+                mark.left = e.offsetX + mark.offX;
+                mark.top = e.offsetY + mark.offY;
+                mark.offX = 0;
+                mark.offY = 0;
                 this.$emit('dragEnd');
             },
             markClick(e, mark, index) {
-                if (this.markStatus[index].focus) {
+                if (mark.focus) {
                     this.loseFocus(mark, index);
                 } else {
                     this.getFocus(mark, index);
@@ -146,22 +147,26 @@
                 e.preventDefault();
             },
             getFocus(mark, index) {
-                this.setAll('focus', false, this.markStatus);
+                this.setAll('focus', false, this.marks);
 
+                this.preventFlag = true;
                 // if is the largest index, needn't change
                 if (mark.zIndex !== this.marks.length) {
+                    const compare = mark.zIndex;
                     this.marks.forEach((item, i) => {
                         if (i === index) {
                             item.zIndex = this.marks.length;
-                        } else {
+                            return;
+                        }
+                        if (item.zIndex > compare) {
                             item.zIndex--;
                         }
                     });
                 }
-                Vue.set(this.markStatus[index], 'focus', true);
+                Vue.set(mark, 'focus', true);
             },
             loseFocus(mark, index) {
-                Vue.set(this.markStatus[index], 'focus', false);
+                Vue.set(mark, 'focus', false);
             },
 
 
@@ -191,7 +196,7 @@
 
     }
 
-    .hui-picture-dragger-status_outter {
+    .hui-picture-dragger-dimension_outter {
         position: absolute;
         z-index: 0;
         right: 0;
@@ -208,7 +213,7 @@
         border-radius: 23px;
     }
 
-    .hui-picture-dragger-status {
+    .hui-picture-dragger-dimension {
         font-size: 12px;
         color: #fff;
     }

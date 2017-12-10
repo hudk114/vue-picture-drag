@@ -10,7 +10,12 @@
 </template>
 
 <script>
+    import pictureDrag from './v-drag/lib/picture-drag';
+
     export default {
+        components: {
+            'picture-drag': pictureDrag,
+        },
         name: 'app',
         data() {
             return {
@@ -37,17 +42,25 @@
                         name: 'hudk',
                         status: 0,
                         id: 0,
-                        left: 256,
-                        top: 251,
+                        left: 273,
+                        top: 243,
                         index: 1, // if no index, would use default index in array
                     },
                     {
                         name: 'kiki',
                         status: 1,
                         id: 1,
-                        left: 670,
-                        top: 131,
+                        left: 659,
+                        top: 142,
                         index: 2,
+                    },
+                    {
+                        name: 'love',
+                        status: 0,
+                        id: 0,
+                        left: 476,
+                        top: 214,
+                        index: 3,
                     },
                 ],
             };

@@ -97,8 +97,8 @@
                     }
                 };
                 this.marks.forEach((item, index) => {
-                    setValue(item, 'offX', 0);
-                    setValue(item, 'offY', 0);
+                    // setValue(item, 'offX', 0);
+                    // setValue(item, 'offY', 0);
                     setValue(item, 'focus', false);
                     setValue(item, 'zIndex', index + 1);
                 });
@@ -109,25 +109,27 @@
             return {
                 markStatus: [],
                 preventFlag: false,
+                dragging: false,
             };
-        },
-        mounted() {
-
         },
         methods: {
             dragStart(e, mark, index) {
-                // the position of the click event and pic has offset, need to set
+                // for firefox, the default event would open a new window, use '' to prevent
+                e.dataTransfer.setData('Text', '');
+                // offset is not avilable in most browser, even firefox...
                 this.getFocus(mark, index);
-                mark.offX = mark.left - e.offsetX;
-                mark.offY = mark.top - e.offsetY;
+                mark.startX = e.screenX;
+                mark.startY = e.screenY;
+                mark.scrollStartX = window.scrollX;
+                mark.scrollStartY = window.scrollY;
+                this.dragging = true;
                 this.$emit('dragStart');
             },
             dragEnd(e, mark, index) {
-                mark.left = e.offsetX + mark.offX;
-                mark.top = e.offsetY + mark.offY;
-                mark.offX = 0;
-                mark.offY = 0;
+                mark.left += (e.screenX - mark.startX + window.scrollX - mark.scrollStartX);
+                mark.top += (e.screenY - mark.startY + window.scrollY - mark.scrollStartY);
                 this.$emit('dragEnd');
+                this.dragging = false;
             },
             markClick(e, mark, index) {
                 if (mark.focus) {

@@ -118,16 +118,16 @@
                 e.dataTransfer.setData('Text', '');
                 // offset is not avilable in most browser, even firefox...
                 this.getFocus(mark, index);
-                mark.startX = e.screenX;
-                mark.startY = e.screenY;
+                mark.startX = e.clientX;
+                mark.startY = e.clientY;
                 mark.scrollStartX = window.scrollX;
                 mark.scrollStartY = window.scrollY;
                 this.dragging = true;
                 this.$emit('dragStart');
             },
             dragEnd(e, mark, index) {
-                mark.left += (e.screenX - mark.startX + window.scrollX - mark.scrollStartX);
-                mark.top += (e.screenY - mark.startY + window.scrollY - mark.scrollStartY);
+                mark.left += (e.clientX - mark.startX + window.scrollX - mark.scrollStartX);
+                mark.top += (e.clientY - mark.startY + window.scrollY - mark.scrollStartY);
                 this.$emit('dragEnd');
                 this.dragging = false;
             },

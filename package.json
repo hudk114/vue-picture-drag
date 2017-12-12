@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/hudk114/vue-picture-drag#readme",
   "devDependencies": {
+    "eslint": "^4.13.1",
     "vue-loader": "^13.0.4"
   },
   "dependencies": {

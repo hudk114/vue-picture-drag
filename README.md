@@ -8,3 +8,7 @@ img：（必须）背景图，包含src，alt及图片宽高
 dimension： （必须）维度，区分标记有几种及每种的颜色
 dimensionVisible： 选择是否展示维度标签
 marks： 标签列表
+
+# 更新
+0.2.0
+采用mouse事件重写底层

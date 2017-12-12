@@ -1,5 +1,6 @@
 <template>
 <div class="hui-picture-dragger_outter" :style="'width:' + img.imgWidth + 'px;'"
+  @mouseup="handleMouseUp($event)"
   @mousemove="handleMouseMove($event)">
   <img :src="img.src" :alt="img.alt" class="hui-background" :style="'height:' + img.imgHeight + 'px;width:' + img.imgWidth + 'px;'" />
   <!-- title -->
@@ -76,8 +77,8 @@ export default {
     },
   },
   mounted() {
-    console.log('asd');
-    document.addEventListener('mouseup', this.handleMouseUp, false);
+    // TODO not use this, if user pull to outof img would cause error
+    // document.addEventListener('mouseup', this.handleMouseUp, false);
   },
   data() {
     return {
@@ -110,6 +111,8 @@ export default {
         offX: e.clientX - mark.left,
         offY: e.clientY - mark.top,
       };
+      // TODO important
+      e.preventDefault();
     },
     handleMouseUp(e, mark, index) {
       console.log('mouseUp');

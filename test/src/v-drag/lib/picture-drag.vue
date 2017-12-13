@@ -26,16 +26,15 @@
         :style="{ backgroundColor: mark.focus? '#F14835': getItem('key', mark.dimension, dimension).color }">
           {{ mark.name }}
       </div>
-      <!-- <div class="hui-picture-dragger_mark-triangle">
-        <span class="hui-picture-dragger_mark-triangle-content"
-          :style="{ borderTopColor: mark.focus? '#F14835': getItem('key', mark.dimension, dimension).color }"></span>
-      </div> -->
+      <div class="hui-picture-dragger_mark-triangle"
+        :style="{ backgroundColor: mark.focus? '#F14835': getItem('key', mark.dimension, dimension).color }">
+      </div>
   </span>
 </div>
 </template>
 
 <script>
-import Vue from 'vue';
+import Vue from 'vue'
 
 export default {
   props: {
@@ -63,24 +62,24 @@ export default {
     },
   },
   computed: {
-    markList() {
-      const setValue = function setValue(obj, key, value) {
-        if ('undefined' === typeof obj[key]) {
-          Vue.set(obj, key, value);
+    markList () {
+      const setValue = function setValue (obj, key, value) {
+        if (typeof obj[key] === 'undefined') {
+          Vue.set(obj, key, value)
         }
-      };
+      }
       this.marks.forEach((item, index) => {
-        setValue(item, 'focus', false);
-        setValue(item, 'zIndex', index + 1);
-      });
-      return this.marks;
+        setValue(item, 'focus', false)
+        setValue(item, 'zIndex', index + 1)
+      })
+      return this.marks
     },
   },
-  mounted() {
+  mounted () {
     // TODO not use this, if user pull to outof img would cause error
     // document.addEventListener('mouseup', this.handleMouseUp, false);
   },
-  data() {
+  data () {
     return {
       status: {
         index: -1,
@@ -90,45 +89,45 @@ export default {
       markStatus: [],
       preventFlag: false,
       dragging: false,
-    };
+    }
   },
   methods: {
-    resetStatus() {
+    resetStatus () {
       this.status = {
         index: -1,
         offX: 0,
         offY: 0,
-      };
+      }
     },
-    handleMouseDown(e, mark, index) {
-      console.log('mouseDown');
+    handleMouseDown (e, mark, index) {
+      console.log('mouseDown')
       if (this.status.index !== -1) {
         // has current mark
-        return;
+        return
       }
       this.status = {
         index,
         offX: e.clientX - mark.left,
         offY: e.clientY - mark.top,
-      };
+      }
       // TODO important
-      e.preventDefault();
+      e.preventDefault()
     },
-    handleMouseUp(e, mark, index) {
-      console.log('mouseUp');
-      this.eleSelect = false;
+    handleMouseUp (e, mark, index) {
+      console.log('mouseUp')
+      this.eleSelect = false
       if (!this.dragging) {
         // TODO alway trigger move, judge
         // click event
-        this.markClick(mark, index);
-        this.dragging = false;
-        return;
+        this.markClick(mark, index)
+        this.dragging = false
+        return
       }
       // mark.startX = e.clientX;
       // mark.startY = e.clientY;
-      this.resetStatus();
+      this.resetStatus()
     },
-    handleMouseOver(e, mark, index) {
+    handleMouseOver (e, mark, index) {
       // console.log('mouseOver');
       // this.dragging = false;
       // mark.startX = e.clientX;
@@ -136,22 +135,22 @@ export default {
       // console.log(e.clientX);
       // console.log(e.clientY);
     },
-    handleMouseMove(e) {
-      console.log('mouseMove');
+    handleMouseMove (e) {
+      console.log('mouseMove')
       if (this.status.index === -1) {
-        return;
+        return
       }
       // console.log('dragging');
-      this.dragging = true;
-      const mark = this.markList[this.status.index];
+      this.dragging = true
+      const mark = this.markList[this.status.index]
       if (!mark.focus) {
-        this.getFocus(mark, this.status.index);
+        this.getFocus(mark, this.status.index)
       }
-      mark.left = e.clientX - this.status.offX;
-      mark.top = e.clientY - this.status.offY;
+      mark.left = e.clientX - this.status.offX
+      mark.top = e.clientY - this.status.offY
     },
-    markClick(mark, index) {
-      console.log('click');
+    markClick (mark, index) {
+      console.log('click')
       // console.log(mark);
       // if (mark.focus) {
       //   this.loseFocus(mark, index);
@@ -160,42 +159,41 @@ export default {
       // }
       // this.$emit('markClick', mark, index);
     },
-    getFocus(mark, index) {
-      this.setAll('focus', false, this.marks);
+    getFocus (mark, index) {
+      this.setAll('focus', false, this.marks)
 
-      this.preventFlag = true;
+      this.preventFlag = true
       // if is the largest index, needn't change
       if (mark.zIndex !== this.marks.length) {
-        const compare = mark.zIndex;
+        const compare = mark.zIndex
         this.marks.forEach((item, i) => {
           if (i === index) {
-            item.zIndex = this.marks.length;
-            return;
+            item.zIndex = this.marks.length
+            return
           }
           if (item.zIndex > compare) {
-            item.zIndex--;
+            item.zIndex--
           }
-        });
+        })
       }
-      Vue.set(mark, 'focus', true);
+      Vue.set(mark, 'focus', true)
     },
-    loseFocus(mark, index) {
-      Vue.set(mark, 'focus', false);
+    loseFocus (mark, index) {
+      Vue.set(mark, 'focus', false)
     },
 
-
-    setAll(key, value, array) {
+    setAll (key, value, array) {
       array.forEach(item => {
-        item[key] = value;
-      });
+        item[key] = value
+      })
     },
-    getItem(key, value, array) {
+    getItem (key, value, array) {
       for (let i = 0; i < array.length; i++) {
         if (array[i][key] === value) {
-          return array[i];
+          return array[i]
         }
       }
-      return null;
+      return null
     },
   },
 }
@@ -206,8 +204,6 @@ export default {
   position: relative;
   display: inline-block;
 }
-
-.hui-background {}
 
 .hui-picture-dragger-dimension_outter {
   position: absolute;
@@ -251,10 +247,13 @@ export default {
 }
 
 .hui-picture-dragger_mark-triangle {
-  text-align: center;
+  /* text-align: center; */
+  position: absolute;
+  left: 19px;
+  bottom: -2px;
+  width: 6px;
+  height: 6px;
+  transform: rotate(45deg);
 }
 
-.hui-picture-dragger_mark-triangle-content {
-  border: solid 6px rgba(0, 0, 0, 0);
-}
 </style>

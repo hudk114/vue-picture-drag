@@ -22,11 +22,11 @@
     @mouseover="handleMouseOver($event, mark, index)"
     :key="mark.id" :style="{ left:mark.left+'px', top:mark.top+'px', zIndex: mark.zIndex }" :ref="'mark' + index" draggable="true"
     class="hui-picture-dragger_mark">
-      <div class="hui-picture-dragger_mark-content"
+      <div :class="[{ 'hui-picture-dragger_mark-content__dragging' : dragging && index === status.index }, 'hui-picture-dragger_mark-content']"
         :style="{ backgroundColor: mark.focus? '#F14835': getItem('key', mark.dimension, dimension).color }">
           {{ mark.name }}
       </div>
-      <div class="hui-picture-dragger_mark-triangle"
+      <div :class="[{ 'hui-picture-dragger_mark-content__dragging' : dragging && index === status.index }, 'hui-picture-dragger_mark-triangle']"
         :style="{ backgroundColor: mark.focus? '#F14835': getItem('key', mark.dimension, dimension).color }">
       </div>
   </span>
@@ -109,6 +109,8 @@ export default {
         index,
         offX: e.clientX - mark.left,
         offY: e.clientY - mark.top,
+        startX: e.clientX,
+        startY: e.clientY
       }
       // TODO important
       e.preventDefault()
@@ -116,13 +118,13 @@ export default {
     handleMouseUp (e, mark, index) {
       console.log('mouseUp')
       this.eleSelect = false
-      if (!this.dragging) {
-        // TODO alway trigger move, judge
-        // click event
-        this.markClick(mark, index)
+      // alway trigger move, judge, if startXY too close, think as click
+      if (Math.abs(e.clientX - this.status.startX) < 5 && Math.abs(e.clientY - this.status.startY) < 5) {
+        this.markClick(this.marks[this.status.index], this.status.index)
         this.dragging = false
-        return
       }
+      // if (!this.dragging) {
+      // }
       // mark.startX = e.clientX;
       // mark.startY = e.clientY;
       this.resetStatus()
@@ -140,7 +142,6 @@ export default {
       if (this.status.index === -1) {
         return
       }
-      // console.log('dragging');
       this.dragging = true
       const mark = this.markList[this.status.index]
       if (!mark.focus) {
@@ -150,14 +151,12 @@ export default {
       mark.top = e.clientY - this.status.offY
     },
     markClick (mark, index) {
-      console.log('click')
-      // console.log(mark);
-      // if (mark.focus) {
-      //   this.loseFocus(mark, index);
-      // } else {
-      //   this.getFocus(mark, index);
-      // }
-      // this.$emit('markClick', mark, index);
+      if (mark.focus) {
+        this.loseFocus(mark, index)
+      } else {
+        this.getFocus(mark, index)
+      }
+      this.$emit('markClick', mark, index)
     },
     getFocus (mark, index) {
       this.setAll('focus', false, this.marks)
@@ -256,4 +255,7 @@ export default {
   transform: rotate(45deg);
 }
 
+.hui-picture-dragger_mark-content__dragging {
+  opacity: 0.7;
+}
 </style>

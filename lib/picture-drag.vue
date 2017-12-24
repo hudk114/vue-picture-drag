@@ -18,18 +18,22 @@
   <slot v-else name="dimension">
   </slot>
 
-  <span v-for="(mark, index) in markList" @mousedown.left="handleMouseDown($event, mark, index)"
+  <span v-for="(mark, index) in markList" 
+    @mousedown.left="handleMouseDown($event, mark, index)"
     @mouseover="handleMouseOver($event, mark, index)"
-    :key="mark.id" :style="{ left:mark.left+'px', top:mark.top+'px', zIndex: mark.zIndex }" :ref="'mark' + index" draggable="true"
+    :key="mark.id" 
+    :style="{ left:mark.left+'px', top:mark.top+'px', zIndex: mark.zIndex }"
+    :ref="'mark' + mark.id"
     class="hui-picture-dragger_mark">
       <div :class="[{ 'hui-picture-dragger_mark-content__dragging' : dragging && index === status.index }, 'hui-picture-dragger_mark-content']"
         :style="{ backgroundColor: mark.focus? '#F14835': getItem('key', mark.dimension, dimension).color }">
           {{ mark.name }}
       </div>
       <div :class="[{ 'hui-picture-dragger_mark-content__dragging' : dragging && index === status.index }, 'hui-picture-dragger_mark-triangle']"
-        :style="{ backgroundColor: mark.focus? '#F14835': getItem('key', mark.dimension, dimension).color }">
+        :style="{ backgroundColor: mark.focus? '#F14835': getItem('key', mark.dimension, dimension).color, left: getItemByKey('key', 'mark' + mark.id, marks).width / 2 - 3 + 'px' }">
       </div>
   </span>
+  <button @click="resetPositions">test</button>
 </div>
 </template>
 
@@ -69,6 +73,9 @@ export default {
         }
       }
       this.marks.forEach((item, index) => {
+        setValue(item, 'key', `mark${item.id}`)
+        setValue(item, 'width', 0)
+        // TODO trigger when happen?
         setValue(item, 'focus', false)
         setValue(item, 'zIndex', index + 1)
       })
@@ -78,6 +85,7 @@ export default {
   mounted () {
     // TODO not use this, if user pull to outof img would cause error
     // document.addEventListener('mouseup', this.handleMouseUp, false);
+    this.resetPositions()
   },
   data () {
     return {
@@ -92,6 +100,33 @@ export default {
     }
   },
   methods: {
+    resetPositions () {
+      for (const key in this.$refs) {
+        if (this.$refs.hasOwnProperty(key)) {
+          const ele = this.$refs[key] && this.$refs[key][0]
+          this.getItemByKey('key', key, this.marks).width = this.getWidth(ele)
+        }
+      }
+      console.log(this.marks)
+    },
+    getItemByKey (key, value, list) {
+      for (let i = 0; i < list.length; i++) {
+        const o = list[i]
+        if (o[key] === value) {
+          return o
+        }
+      }
+      return null
+    },
+    getWidth (ele) {
+      const l = this.getComputedStyle(ele, 'width')
+      return l ? parseInt(l, 10) : null
+    },
+    getComputedStyle (ele, style) {
+      // TODO for ie?
+      const styleList = window.getComputedStyle(ele)
+      return styleList && styleList[style]
+    },
     resetStatus () {
       this.status = {
         index: -1,
@@ -123,10 +158,6 @@ export default {
         this.markClick(this.marks[this.status.index], this.status.index)
         this.dragging = false
       }
-      // if (!this.dragging) {
-      // }
-      // mark.startX = e.clientX;
-      // mark.startY = e.clientY;
       this.resetStatus()
     },
     handleMouseOver (e, mark, index) {
@@ -248,7 +279,6 @@ export default {
 .hui-picture-dragger_mark-triangle {
   /* text-align: center; */
   position: absolute;
-  left: 19px;
   bottom: -2px;
   width: 6px;
   height: 6px;

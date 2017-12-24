@@ -57,7 +57,7 @@ export default {
             {
               name: 'love',
               dimension: 0,
-              id: 0,
+              id: 3,
               left: 476,
               top: 214,
               zIndex: 3,

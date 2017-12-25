@@ -75,17 +75,22 @@ export default {
       this.marks.forEach((item, index) => {
         setValue(item, 'key', `mark${item.id}`)
         setValue(item, 'width', 0)
+        setValue(item, 'height', 0)
+        setValue(item, 'centerLeft', 0)
+        setValue(item, 'centerTop', 0)
         // TODO trigger when happen?
         setValue(item, 'focus', false)
         setValue(item, 'zIndex', index + 1)
       })
+      this.resetPositions()
+      this.resetCenter()
       return this.marks
     },
   },
   mounted () {
     // TODO not use this, if user pull to outof img would cause error
-    // document.addEventListener('mouseup', this.handleMouseUp, false);
     this.resetPositions()
+    this.resetCenter()
   },
   data () {
     return {
@@ -101,13 +106,35 @@ export default {
   },
   methods: {
     resetPositions () {
+      const getWidth = ele => {
+        const l = this.getComputedStyle(ele, 'width')
+        return l ? parseInt(l, 10) : null
+      }
+      const getHeight = ele => {
+        const l = this.getComputedStyle(ele, 'height')
+        return l ? parseInt(l, 10) : null
+      }
+
       for (const key in this.$refs) {
         if (this.$refs.hasOwnProperty(key)) {
           const ele = this.$refs[key] && this.$refs[key][0]
-          this.getItemByKey('key', key, this.marks).width = this.getWidth(ele)
+          this.getItemByKey('key', key, this.marks).width = getWidth(ele)
+          this.getItemByKey('key', key, this.marks).height = getHeight(ele)
         }
       }
-      console.log(this.marks)
+    },
+    // reset centerLeft and centerTop of the mark
+    resetCenter () {
+      const judgeExist = val => {
+        return !(typeof val === 'undefined' || val === null)
+      }
+      this.marks.forEach(item => {
+        if (!(judgeExist(item.width) || judgeExist(item.height))) {
+          return
+        }
+        item.centerLeft = item.left + item.width / 2
+        item.centerTop = item.top + item.height / 2 + 3
+      })
     },
     getItemByKey (key, value, list) {
       for (let i = 0; i < list.length; i++) {
@@ -117,10 +144,6 @@ export default {
         }
       }
       return null
-    },
-    getWidth (ele) {
-      const l = this.getComputedStyle(ele, 'width')
-      return l ? parseInt(l, 10) : null
     },
     getComputedStyle (ele, style) {
       // TODO for ie?
@@ -144,8 +167,8 @@ export default {
         index,
         offX: e.clientX - mark.left,
         offY: e.clientY - mark.top,
-        startX: e.clientX,
-        startY: e.clientY
+        startX: mark.left,
+        startY: mark.top
       }
       // TODO important
       e.preventDefault()
@@ -153,12 +176,22 @@ export default {
     handleMouseUp (e, mark, index) {
       console.log('mouseUp')
       this.eleSelect = false
-      // alway trigger move, judge, if startXY too close, think as click
+      // alway trigger move, judge, if startXY too close, thought as click
       if (Math.abs(e.clientX - this.status.startX) < 5 && Math.abs(e.clientY - this.status.startY) < 5) {
         this.markClick(this.marks[this.status.index], this.status.index)
         this.dragging = false
+        this.resetStatus()
+        return
+      }
+      // TODO dragging, need judge, if out of the image, need reset
+      if (this.judgeOut()) {
+        this.marks[this.status.index].left = this.status.startX
+        this.marks[this.status.index].top = this.status.startY
       }
       this.resetStatus()
+    },
+    judgeOut () {
+      return false
     },
     handleMouseOver (e, mark, index) {
       // console.log('mouseOver');

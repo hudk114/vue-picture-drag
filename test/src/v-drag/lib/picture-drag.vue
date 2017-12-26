@@ -20,7 +20,6 @@
 
   <span v-for="(mark, index) in markList" 
     @mousedown.left="handleMouseDown($event, mark, index)"
-    @mouseover="handleMouseOver($event, mark, index)"
     :key="mark.id" 
     :style="{ left:mark.left+'px', top:mark.top+'px', zIndex: mark.zIndex }"
     :ref="'mark' + mark.id"
@@ -133,7 +132,7 @@ export default {
           return
         }
         item.centerLeft = item.left + item.width / 2
-        item.centerTop = item.top + item.height / 2 + 3
+        item.centerTop = item.top + item.height + 3
       })
     },
     getItemByKey (key, value, list) {
@@ -158,7 +157,7 @@ export default {
       }
     },
     handleMouseDown (e, mark, index) {
-      console.log('mouseDown')
+      // console.log('mouseDown')
       if (this.status.index !== -1) {
         // has current mark
         return
@@ -173,36 +172,28 @@ export default {
       // TODO important
       e.preventDefault()
     },
-    handleMouseUp (e, mark, index) {
-      console.log('mouseUp')
+    handleMouseUp (e, mark = this.marks[this.status.index], index) {
+      // console.log('mouseUp')
       this.eleSelect = false
       // alway trigger move, judge, if startXY too close, thought as click
       if (Math.abs(e.clientX - this.status.startX) < 5 && Math.abs(e.clientY - this.status.startY) < 5) {
-        this.markClick(this.marks[this.status.index], this.status.index)
+        this.markClick(mark, this.status.index)
         this.dragging = false
         this.resetStatus()
         return
       }
-      // TODO dragging, need judge, if out of the image, need reset
-      if (this.judgeOut()) {
-        this.marks[this.status.index].left = this.status.startX
-        this.marks[this.status.index].top = this.status.startY
+      // dragging, if out of the image, need reset
+      if (this.judgeOut(mark)) {
+        mark.left = this.status.startX
+        mark.top = this.status.startY
       }
       this.resetStatus()
     },
-    judgeOut () {
-      return false
-    },
-    handleMouseOver (e, mark, index) {
-      // console.log('mouseOver');
-      // this.dragging = false;
-      // mark.startX = e.clientX;
-      // mark.startY = e.clientY;
-      // console.log(e.clientX);
-      // console.log(e.clientY);
+    judgeOut (mark) {
+      return this.img.imgHeight < mark.centerTop || this.img.imgWidth < mark.centerLeft
     },
     handleMouseMove (e) {
-      console.log('mouseMove')
+      // console.log('mouseMove')
       if (this.status.index === -1) {
         return
       }

@@ -1,6 +1,6 @@
 {
   "name": "vue-picture-drag",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "a pictures or items draggable component for vue",
   "main": "src/index.js",
   "scripts": {

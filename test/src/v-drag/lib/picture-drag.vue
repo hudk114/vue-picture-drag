@@ -104,6 +104,11 @@ export default {
     }
   },
   methods: {
+    getComputedStyle (ele, style) {
+      // TODO for ie?
+      const styleList = window.getComputedStyle(ele)
+      return styleList && styleList[style]
+    },
     resetPositions () {
       const getWidth = ele => {
         const l = this.getComputedStyle(ele, 'width')
@@ -144,18 +149,14 @@ export default {
       }
       return null
     },
-    getComputedStyle (ele, style) {
-      // TODO for ie?
-      const styleList = window.getComputedStyle(ele)
-      return styleList && styleList[style]
-    },
     resetStatus () {
       this.status = {
         index: -1,
         offX: 0,
-        offY: 0,
+        offY: 0
       }
     },
+    // click, both click and dragging may trigger this
     handleMouseDown (e, mark, index) {
       // console.log('mouseDown')
       if (this.status.index !== -1) {
@@ -169,13 +170,12 @@ export default {
         startX: mark.left,
         startY: mark.top
       }
-      // TODO important
       e.preventDefault()
     },
-    handleMouseUp (e, mark = this.marks[this.status.index], index) {
+    handleMouseUp (e, mark = this.marks[this.status.index], index = this.status.index) {
       // console.log('mouseUp')
-      this.eleSelect = false
-      // alway trigger move, judge, if startXY too close, thought as click
+
+      // alway trigger move, need judge, if startXY too close, thought as click
       if (Math.abs(e.clientX - this.status.startX) < 5 && Math.abs(e.clientY - this.status.startY) < 5) {
         this.markClick(mark, this.status.index)
         this.dragging = false

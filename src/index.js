@@ -1,9 +1,7 @@
-import pictureDrag from '../lib/picture-drag'
+import PictureDrag from '../lib/picture-drag';
 
-const install = function (Vue) {
-  Vue.component('picture-drag', pictureDrag)
-}
+const install = function install (Vue, opts = {}) {
+  Vue.component('h-picture-drag', PictureDrag);
+};
 
-export default {
-  install,
-}
+export default { install };

@@ -1,39 +1,67 @@
 <template>
-<div class="hui-picture-dragger_outter" :style="'width:' + img.imgWidth + 'px;'"
-  @mouseup="handleMouseUp($event)"
-  @mousemove="handleMouseMove($event)">
-  <img :src="img.src" :alt="img.alt" class="hui-background" :style="'height:' + img.imgHeight + 'px;width:' + img.imgWidth + 'px;'" />
-  <!-- title -->
-  <span v-if="title" class="hui-picture-dragger_title">
-      {{ title }}
+  <div
+    class="picture-dragger__wrapper"
+    :style="'width:' + img.imgWidth + 'px;'"
+    @mouseup="handleMouseUp($event)"
+    @mousemove="handleMouseMove($event)">
+    <img
+      class="picture-dragger__background"
+      :src="img.src"
+      :alt="img.alt"
+      :style="'height:' + img.imgHeight + 'px;width:' + img.imgWidth + 'px;'" />
+    
+    <!-- title -->
+    <span v-if="title" class="picture-dragger__title">
+      {{title}}
     </span>
-  <slot v-else name="title">
-  </slot>
+    <slot v-else name="title">
+    </slot>
 
-  <div class="hui-picture-dragger-dimension_outter" v-if="dimensionVisible">
-    <span v-for="item in dimension" class="hui-picture-dragger-dimension" :key="item.key" :style="{ backgroundColor: item.color }">
-        {{ item.name }}
-      </span>
+    <div
+      class="picture-dragger__dimension__wrapper"
+      v-if="dimensions.length > 0">
+      <span
+        v-for="item in dimensions"
+        class="picture-dragger__dimension"
+        :key="item.key"
+        :style="{backgroundColor: item.color}">{{item.name}}</span>
+    </div>
+    <slot v-else name="dimension">
+    </slot>
+
+    <span v-for="(mark, index) in markList" 
+      @mousedown.left="handleMouseDown($event, mark, index)"
+      :key="mark.id" 
+      :style="{
+        left: mark.left + 'px',
+        top: mark.top + 'px',
+        zIndex: mark.zIndex
+      }"
+      :ref="mark.id"
+      class="picture-dragger__mark">
+        <div 
+          :class="[
+            {'picture-dragger__mark-content__dragging' : dragging && index === status.index},
+            'picture-dragger__mark-content'
+          ]"
+          :style="{
+            backgroundColor: mark.focus? '#F14835': getItem('key', mark.dimension, dimensions).color
+          }">
+          {{mark.name}}
+        </div>
+        <div
+          :class="[
+            {'picture-dragger__mark-content__dragging' : dragging && index === status.index },
+            'picture-dragger__mark-triangle'
+          ]"
+          :style="{
+            backgroundColor: mark.focus? '#F14835': getItem('key', mark.dimension, dimensions).color,
+            left: _getItemByKey('id', mark.id, marks).width / 2 - 3 + 'px'
+          }">
+        </div>
+    </span>
+    <button @click="resetWidthAndHeight(markList)">test</button>
   </div>
-  <slot v-else name="dimension">
-  </slot>
-
-  <span v-for="(mark, index) in markList" 
-    @mousedown.left="handleMouseDown($event, mark, index)"
-    :key="mark.id" 
-    :style="{ left:mark.left+'px', top:mark.top+'px', zIndex: mark.zIndex }"
-    :ref="'mark' + mark.id"
-    class="hui-picture-dragger_mark">
-      <div :class="[{ 'hui-picture-dragger_mark-content__dragging' : dragging && index === status.index }, 'hui-picture-dragger_mark-content']"
-        :style="{ backgroundColor: mark.focus? '#F14835': getItem('key', mark.dimension, dimension).color }">
-          {{ mark.name }}
-      </div>
-      <div :class="[{ 'hui-picture-dragger_mark-content__dragging' : dragging && index === status.index }, 'hui-picture-dragger_mark-triangle']"
-        :style="{ backgroundColor: mark.focus? '#F14835': getItem('key', mark.dimension, dimension).color, left: getItemByKey('key', 'mark' + mark.id, marks).width / 2 - 3 + 'px' }">
-      </div>
-  </span>
-  <button @click="resetPositions">test</button>
-</div>
 </template>
 
 <script>
@@ -50,15 +78,11 @@ export default {
       required: true,
     },
     // [{ name, key, color }]
-    dimension: {
+    dimensions: {
       type: Array,
       required: true,
     },
-    dimensionVisible: {
-      type: Boolean,
-      default: true,
-    },
-    // [{ name, dimension, id, left, top, index }]
+    // [{ name, dimension, id, left, top }]
     marks: {
       type: Array,
       default: [],
@@ -66,30 +90,31 @@ export default {
   },
   computed: {
     markList () {
-      const setValue = function setValue (obj, key, value) {
-        if (typeof obj[key] === 'undefined') {
-          Vue.set(obj, key, value)
-        }
-      }
+      const sV = this._setValue;
+      // 给marks增加一些用于渲染的东西
       this.marks.forEach((item, index) => {
-        setValue(item, 'key', `mark${item.id}`)
-        setValue(item, 'width', 0)
-        setValue(item, 'height', 0)
-        setValue(item, 'centerLeft', 0)
-        setValue(item, 'centerTop', 0)
-        // TODO trigger when happen?
-        setValue(item, 'focus', false)
-        setValue(item, 'zIndex', index + 1)
-      })
-      this.resetPositions()
-      this.resetCenter()
-      return this.marks
+        sV(item, 'centerLeft', 0);
+        sV(item, 'centerTop', 0);
+        sV(item, 'left', 0);
+        sV(item, 'top', 0);
+        sV(item, 'width', 0);
+        sV(item, 'height', 0);
+        sV(item, 'focus', false);
+        sV(item, 'zIndex', index + 1);
+      });
+      this.resetWidthAndHeight(this.marks);
+      return this.marks;
     },
   },
   mounted () {
     // TODO not use this, if user pull to outof img would cause error
-    this.resetPositions()
-    this.resetCenter()
+
+    // TODO why???
+    this.dragging = true;
+    this.resetWidthAndHeight(this.marks);
+    this.dragging = false;
+
+    this.resetCenter();
   },
   data () {
     return {
@@ -104,50 +129,59 @@ export default {
     }
   },
   methods: {
-    getComputedStyle (ele, style) {
-      // TODO for ie?
-      const styleList = window.getComputedStyle(ele)
-      return styleList && styleList[style]
+    _setValue (obj, key, value) {
+      if (typeof obj[key] === 'undefined') {
+        Vue.set(obj, key, value);
+      }
     },
-    resetPositions () {
+    _getItemByKey (key, val, list) {
+      for (const item of list) {
+        if (item[key] === val) {
+          return item;
+        }
+      }
+      return null;
+    },
+    _getComputedStyle (ele, style) {
+      // TODO for ie?
+      const styleList = window.getComputedStyle(ele);
+      return styleList && styleList[style];
+    },
+    resetWidthAndHeight (markList) {
       const getWidth = ele => {
-        const l = this.getComputedStyle(ele, 'width')
-        return l ? parseInt(l, 10) : null
-      }
+        const l = this._getComputedStyle(ele, 'width');
+        return l && parseInt(l, 10);
+      };
       const getHeight = ele => {
-        const l = this.getComputedStyle(ele, 'height')
-        return l ? parseInt(l, 10) : null
-      }
+        const h = this._getComputedStyle(ele, 'height')
+        return h && parseInt(h, 10);
+      };
 
-      for (const key in this.$refs) {
-        if (this.$refs.hasOwnProperty(key)) {
-          const ele = this.$refs[key] && this.$refs[key][0]
-          this.getItemByKey('key', key, this.marks).width = getWidth(ele)
-          this.getItemByKey('key', key, this.marks).height = getHeight(ele)
+      for (const id in this.$refs) {
+        if (this.$refs.hasOwnProperty(id)) {
+          const mark = this._getItemByKey('id', parseInt(id, 10), markList);
+          if (!mark) {
+            return;
+          }
+          const ele = this.$refs[id] && this.$refs[id][0];
+          Vue.set(mark, 'width', getWidth(ele));
+          Vue.set(mark, 'height', getHeight(ele));
         }
       }
     },
     // reset centerLeft and centerTop of the mark
     resetCenter () {
       const judgeExist = val => {
-        return !(typeof val === 'undefined' || val === null)
-      }
+        return !(typeof val === 'undefined' || val === null);
+      };
+
       this.marks.forEach(item => {
         if (!(judgeExist(item.width) || judgeExist(item.height))) {
-          return
+          return;
         }
-        item.centerLeft = item.left + item.width / 2
-        item.centerTop = item.top + item.height + 3
-      })
-    },
-    getItemByKey (key, value, list) {
-      for (let i = 0; i < list.length; i++) {
-        const o = list[i]
-        if (o[key] === value) {
-          return o
-        }
-      }
-      return null
+        item.centerLeft = item.left + item.width / 2;
+        item.centerTop = item.top + item.height + 3;
+      });
     },
     resetStatus () {
       this.status = {
@@ -161,59 +195,70 @@ export default {
       // console.log('mouseDown')
       if (this.status.index !== -1) {
         // has current mark
-        return
+        return;
       }
+
       this.status = {
         index,
         offX: e.clientX - mark.left,
         offY: e.clientY - mark.top,
         startX: mark.left,
         startY: mark.top
-      }
-      e.preventDefault()
+      };
+      e.preventDefault();
     },
-    handleMouseUp (e, mark = this.marks[this.status.index], index = this.status.index) {
-      // console.log('mouseUp')
+    handleMouseUp (
+      e,
+      mark = this.marks[this.status.index],
+      index = this.status.index
+    ) {
+      if (!mark) {
+        return;
+      }
 
       // alway trigger move, need judge, if startXY too close, thought as click
-      if (Math.abs(e.clientX - this.status.startX) < 5 && Math.abs(e.clientY - this.status.startY) < 5) {
-        this.markClick(mark, this.status.index)
-        this.dragging = false
-        this.resetStatus()
-        return
+      if (
+        Math.abs(e.clientX - (this.status.startX + this.status.offX)) < 1 &&
+        Math.abs(e.clientY - (this.status.startY + this.status.offY)) < 1
+      ) {
+        this.markClick(mark, this.status.index);
+        this.dragging = false;
+        this.resetStatus();
+        return;
       }
+
       // dragging, if out of the image, need reset
       if (this.judgeOut(mark)) {
-        mark.left = this.status.startX
-        mark.top = this.status.startY
+        mark.left = this.status.startX;
+        mark.top = this.status.startY;
       }
-      this.resetStatus()
+      this.resetStatus();
     },
     judgeOut (mark) {
       return this.img.imgHeight < mark.centerTop || this.img.imgWidth < mark.centerLeft
     },
     handleMouseMove (e) {
-      // console.log('mouseMove')
       if (this.status.index === -1) {
-        return
+        return;
       }
-      this.dragging = true
-      const mark = this.markList[this.status.index]
+      this.dragging = true;
+      const mark = this.marks[this.status.index];
       if (!mark.focus) {
-        this.getFocus(mark, this.status.index)
+        this.getFocus(this.status.index);
       }
-      mark.left = e.clientX - this.status.offX
-      mark.top = e.clientY - this.status.offY
+      mark.left = e.clientX - this.status.offX;
+      mark.top = e.clientY - this.status.offY;
     },
     markClick (mark, index) {
       if (mark.focus) {
-        this.loseFocus(mark, index)
+        this.loseFocus(index);
       } else {
-        this.getFocus(mark, index)
+        this.getFocus(index);
       }
-      this.$emit('markClick', mark, index)
+      this.$emit('markClick', mark, index);
     },
-    getFocus (mark, index) {
+    getFocus (index) {
+      const mark = this.marks[index];
       this.setAll('focus', false, this.marks)
 
       this.preventFlag = true
@@ -230,10 +275,13 @@ export default {
           }
         })
       }
-      Vue.set(mark, 'focus', true)
+      mark.focus = true;
+      Vue.set(this.marks, index, mark);
     },
-    loseFocus (mark, index) {
-      Vue.set(mark, 'focus', false)
+    loseFocus (index) {
+      const mark = this.marks[index];
+      mark.focus = false;
+      Vue.set(this.marks, index, mark);
     },
 
     setAll (key, value, array) {
@@ -249,24 +297,17 @@ export default {
       }
       return null
     },
-  },
+  }
 }
 </script>
 
-<style scoped>
-.hui-picture-dragger_outter {
+<style>
+.picture-dragger__wrapper {
   position: relative;
   display: inline-block;
 }
 
-.hui-picture-dragger-dimension_outter {
-  position: absolute;
-  z-index: 0;
-  right: 0;
-  top: 10px;
-}
-
-.hui-picture-dragger_title {
+.picture-dragger__title {
   position: absolute;
   top: 10px;
   left: 10px;
@@ -276,12 +317,22 @@ export default {
   border-radius: 23px;
 }
 
-.hui-picture-dragger-dimension {
-  font-size: 12px;
-  color: #fff;
+.picture-dragger__dimension__wrapper {
+  position: absolute;
+  z-index: 0;
+  top: 10px;
+  right: 0;
 }
 
-.hui-picture-dragger_mark {
+.picture-dragger__dimension {
+  padding: 4px 8px;
+  font-size: 12px;
+  text-align: center;
+  color: #fff;
+  margin-right: 10px;
+}
+
+.picture-dragger__mark {
   position: absolute;
   min-width: 36px;
   line-height: 30px;
@@ -290,7 +341,7 @@ export default {
   text-align: center;
 }
 
-.hui-picture-dragger_mark-content {
+.picture-dragger__mark-content {
   padding: 0 10px;
   height: 28px;
   line-height: 28px;
@@ -300,7 +351,7 @@ export default {
   -moz-border-radius: 20px;
 }
 
-.hui-picture-dragger_mark-triangle {
+.picture-dragger__mark-triangle {
   /* text-align: center; */
   position: absolute;
   bottom: -2px;
@@ -309,7 +360,7 @@ export default {
   transform: rotate(45deg);
 }
 
-.hui-picture-dragger_mark-content__dragging {
+.picture-dragger__mark-content__dragging {
   opacity: 0.7;
 }
 </style>

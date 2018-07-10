@@ -1,11 +1,9 @@
 <template>
-  <div
-    class="picture-dragger__wrapper"
+  <div class="picture-dragger__wrapper"
     :style="'width:' + img.imgWidth + 'px;'"
     @mouseup="handleMouseUp($event)"
     @mousemove="handleMouseMove($event)">
-    <img
-      class="picture-dragger__background"
+    <img class="picture-dragger__background"
       :src="img.src"
       :alt="img.alt"
       :style="'height:' + img.imgHeight + 'px;width:' + img.imgWidth + 'px;'" />
@@ -17,12 +15,10 @@
     <slot v-else name="title">
     </slot>
 
-    <div
-      class="picture-dragger__dimension__wrapper"
+    <div class="picture-dragger__dimension__wrapper"
       v-if="dimensions.length > 0">
-      <span
+      <span class="picture-dragger__dimension"
         v-for="item in dimensions"
-        class="picture-dragger__dimension"
         :key="item.key"
         :style="{backgroundColor: item.color}">{{item.name}}</span>
     </div>
@@ -125,8 +121,8 @@ export default {
       },
       markStatus: [],
       preventFlag: false,
-      dragging: false,
-    }
+      dragging: false
+    };
   },
   methods: {
     _setValue (obj, key, value) {
